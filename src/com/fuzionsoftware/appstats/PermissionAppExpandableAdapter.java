@@ -1,7 +1,10 @@
 package com.fuzionsoftware.appstats;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
@@ -24,11 +27,16 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 	PermissionAppExpandableAdapter( HashMap<String,ArrayList<PackageInfo>> appPermissionMap, Activity context)
 	{
 		permissionAppMap = appPermissionMap;
-		
-		mKeys = permissionAppMap.keySet().toArray();
+		Set<String> keySet = permissionAppMap.keySet();
+		List<String> sortedList = asSortedList(keySet);
+		mKeys = sortedList.toArray();
 		mCTX = context;
 	}
-	
+	public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
+	  List<T> list = new ArrayList<T>(c);
+	  java.util.Collections.sort(list);
+	  return list;
+	}
     public Object getChild(int groupPosition, int childPosition) {
         ApplicationInfo appInfo =  permissionAppMap.get(mKeys[groupPosition]).get(childPosition).applicationInfo;
         
@@ -53,7 +61,7 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
         // Center the text vertically
         textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         // Set the text starting position
-        textView.setPadding(36, 0, 0, 0);
+        textView.setPadding(60, 0, 0, 0);
         return textView;
     }
 
