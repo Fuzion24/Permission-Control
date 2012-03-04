@@ -3,8 +3,6 @@ package com.fuzionsoftware.appstats;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.fuzionsoftware.utils.PackageInfoHelper;
-
 import android.app.ExpandableListActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -18,6 +16,8 @@ import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.Toast;
+
+import com.fuzionsoftware.utils.PackageInfoHelper;
 
 public class PermissionAppMapActivity extends ExpandableListActivity {
 
