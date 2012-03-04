@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, ApplicationStatsActivity!</string>
     <string name="app_name">ApplicationStats</string>
     <string name="desc">Android Icon</string>
-
+    <string name="revoke_permission">Revoke Permission</string>
 </resources>
