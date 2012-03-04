@@ -37,6 +37,12 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 	  java.util.Collections.sort(list);
 	  return list;
 	}
+	
+	public PackageInfo getPackageInfo(int groupPosition, int childPosition)
+	{
+		return permissionAppMap.get(mKeys[groupPosition]).get(childPosition);
+	}
+	
     public Object getChild(int groupPosition, int childPosition) {
         ApplicationInfo appInfo =  permissionAppMap.get(mKeys[groupPosition]).get(childPosition).applicationInfo;
         

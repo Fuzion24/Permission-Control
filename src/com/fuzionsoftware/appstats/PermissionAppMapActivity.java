@@ -2,19 +2,18 @@ package com.fuzionsoftware.appstats;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+
+import com.fuzionsoftware.utils.PackageInfoHelper;
 
 import android.app.ExpandableListActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView.OnChildClickListener;
@@ -22,43 +21,18 @@ import android.widget.Toast;
 
 public class PermissionAppMapActivity extends ExpandableListActivity {
 
-    ExpandableListAdapter mAdapter;
+	PermissionAppExpandableAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        HashMap<String,ArrayList<PackageInfo>> hMap = getPermissionAppMap();
+        HashMap<String,ArrayList<PackageInfo>> hMap = PackageInfoHelper.getPermissionAppMap(getApplicationContext());
         mAdapter = new PermissionAppExpandableAdapter(hMap,this);
         setListAdapter(mAdapter);
         getExpandableListView().setOnChildClickListener(mChildClickListener);
         registerForContextMenu(this.getExpandableListView());
         CyanogenModCheck.isRunningOnCyanogenmod();
-    }
-
-    public HashMap<String,ArrayList<PackageInfo>> getPermissionAppMap()
-    {
-    	//Permission as the key, array of packages that use that permission
-    	HashMap<String,ArrayList<PackageInfo>> permissionAppmap = new HashMap<String,ArrayList<PackageInfo>>(128);    	
-    	PackageManager pm  = getPackageManager();
-    	List<PackageInfo> packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS);
-    	
-    	for(PackageInfo pi : packages)
-    	{
-    		if (pi.requestedPermissions == null)
-    			continue;
-    		
-    		for(String permission : pi.requestedPermissions)
-    		{
-	    		if (!permissionAppmap.containsKey(permission))
-	    		{
-	    			ArrayList<PackageInfo> arPi = new ArrayList<PackageInfo>(20);
-	    			permissionAppmap.put(permission, arPi);
-	    		}
-    			permissionAppmap.get(permission).add(pi);
-    		}
-    	}    
-    	return permissionAppmap;
     }
     
     private OnChildClickListener mChildClickListener = new OnChildClickListener() {
@@ -66,6 +40,8 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
                 int groupPosition, int childPosition, long id) {
 
             Intent intent = new Intent();
+            PackageInfo pi = mAdapter.getPackageInfo(groupPosition,childPosition);
+            intent.putExtra("PackageInfo", pi);
             intent.setClass(PermissionAppMapActivity.this, ApplicationInfoActivity.class);
             startActivity(intent);
       
