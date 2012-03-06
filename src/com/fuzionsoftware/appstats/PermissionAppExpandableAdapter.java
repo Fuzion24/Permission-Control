@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PermissionInfo;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
@@ -20,17 +21,45 @@ import android.widget.TextView;
 
 public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
     
-	HashMap<String,ArrayList<PackageInfo>> permissionAppMap;	
+	HashMap<String, ArrayList<PackageInfo>> permissionAppMap;	
+	HashMap<String,ArrayList<String>> revokedPermissionMap;
+	HashMap<String,PermissionInfo> permissionStringInfoMap;
 	Object[] mKeys;
 	Activity mCTX;
 	
-	PermissionAppExpandableAdapter( HashMap<String,ArrayList<PackageInfo>> appPermissionMap, Activity context)
+	PermissionAppExpandableAdapter( HashMap<String,ArrayList<PackageInfo>> appPermissionMap, 
+									HashMap<String,ArrayList<String>> revokedPermMap,
+									HashMap<String,PermissionInfo> permStringInfo, 
+									boolean showOnlyDangerous,
+									Activity context)
 	{
+		revokedPermissionMap = revokedPermMap;
 		permissionAppMap = appPermissionMap;
-		Set<String> keySet = permissionAppMap.keySet();
-		List<String> sortedList = asSortedList(keySet);
-		mKeys = sortedList.toArray();
+		permissionStringInfoMap = permStringInfo;
+		
+		if(showOnlyDangerous)
+		{
+			mKeys = dangerousPerms();
+		}else
+		{
+			List<String> sortedList = asSortedList(permissionAppMap.keySet());
+			mKeys = sortedList.toArray();
+		}
+
 		mCTX = context;
+	}
+	
+	private Object[] dangerousPerms()
+	{	
+		List<String> dangerousPerms = new ArrayList<String>();
+		for(Entry<String,PermissionInfo> entry : permissionStringInfoMap.entrySet())
+		{
+			if(entry.getValue().protectionLevel == PermissionInfo.PROTECTION_DANGEROUS)
+				dangerousPerms.add(entry.getKey());
+		}
+		
+		java.util.Collections.sort(dangerousPerms);
+		return dangerousPerms.toArray();
 	}
 	public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
 	  List<T> list = new ArrayList<T>(c);
@@ -42,7 +71,7 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 	{
 		return permissionAppMap.get(mKeys[groupPosition]).get(childPosition);
 	}
-	
+
     public Object getChild(int groupPosition, int childPosition) {
         ApplicationInfo appInfo =  permissionAppMap.get(mKeys[groupPosition]).get(childPosition).applicationInfo;
         
@@ -73,14 +102,18 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
             View convertView, ViewGroup parent) {
+    	
     	Drawable img = permissionAppMap.get(mKeys[groupPosition]).get(childPosition).applicationInfo.loadIcon(mCTX.getPackageManager());
     	
     	View view = mCTX.getLayoutInflater().inflate(R.layout.app_layout, null);
     	TextView textview = (TextView) view.findViewById(R.id.android_info_text);
     	ImageView imageview = (ImageView) view.findViewById(R.id.android_info_image);
     	
-    	textview.setText(getChild(groupPosition, childPosition).toString());    
+    	textview.setText(getChild(groupPosition, childPosition).toString());  
+    
     	imageview.setImageDrawable(img);
+    	if(permissionRevoked(groupPosition, childPosition))
+    		view.setBackgroundColor(0xfff00000);
         return view;
     }
 
@@ -88,7 +121,12 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
     	String s = (String)mKeys[groupPosition];
         return s.replaceAll("android.permission.", "");
     }
-
+  
+    public boolean permissionRevoked(int groupPos, int childPos)
+    {
+    	String pkgName = permissionAppMap.get(mKeys[groupPos]).get(childPos).packageName;
+    	return revokedPermissionMap.get(pkgName).contains(mKeys[groupPos]);
+    }
     public int getGroupCount() {
         return mKeys.length;
     }
@@ -99,9 +137,13 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
             ViewGroup parent) {
-        TextView textView = getGenericView();
-        textView.setText(getGroup(groupPosition).toString());
-        return textView;
+    	View view = mCTX.getLayoutInflater().inflate(R.layout.permission_layout, null);
+    	TextView permissionText = (TextView) view.findViewById(R.id.android_permission_name);
+    	TextView permissionLabelText = (TextView) view.findViewById(R.id.android_permission_label);
+    	CharSequence permissionLabel = permissionStringInfoMap.get(mKeys[groupPosition]).loadLabel(((mCTX.getPackageManager())));
+    	permissionLabelText.setText(permissionLabel);
+    	permissionText.setText(getGroup(groupPosition).toString());
+        return view;
     }
 
     public boolean isChildSelectable(int groupPosition, int childPosition) {

@@ -1,13 +1,17 @@
-package com.fuzionsoftware.appstats;
+package com.fuzionsoftware.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 
-public class CyanogenModCheck {
+
+public class CyanogenModHelper {
 	public static final String SYS_PROP_MOD_VERSION = "ro.modversion";
 	private static String CYANOGEN_VER_REGEX = "CyanogenMod-([^-]*)-.*";
 	public static boolean isRunningOnCyanogenmod()
@@ -41,6 +45,33 @@ public class CyanogenModCheck {
 		}
 		return false;
 	}
+	
+    public static String [] getRevokedPerms(String packageName,Context ctx)
+    {
+    	String [] revokedPerms = null;
+    	PackageManager pkgManager = ctx.getPackageManager();
+		Method getRevokedPermissions;
+		try {
+			getRevokedPermissions = pkgManager.getClass().getMethod("getRevokedPermissions",java.lang.String.class);
+			Object[] params = new Object[] { packageName };
+			revokedPerms = (String[]) getRevokedPermissions.invoke(pkgManager, params);
+			if(revokedPerms.length > 0)
+				System.out.println("Package: " + packageName + " has revoked permissions:");
+			for(String revokedPerm : revokedPerms)
+			{
+				System.out.println(revokedPerm);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		return revokedPerms;
+    }
+    
+    public static void setPermissions(String packageName, String [] permissions)
+    {
+
+    }
 
 	public static String getSystemProperty(String propName){
         String line = "";

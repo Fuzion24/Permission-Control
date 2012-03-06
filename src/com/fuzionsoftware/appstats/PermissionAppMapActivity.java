@@ -1,8 +1,5 @@
 package com.fuzionsoftware.appstats;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import android.app.ExpandableListActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -17,6 +14,7 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.Toast;
 
+import com.fuzionsoftware.utils.CyanogenModHelper;
 import com.fuzionsoftware.utils.PackageInfoHelper;
 
 public class PermissionAppMapActivity extends ExpandableListActivity {
@@ -27,12 +25,12 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
     public void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        HashMap<String,ArrayList<PackageInfo>> hMap = PackageInfoHelper.getPermissionAppMap(getApplicationContext());
-        mAdapter = new PermissionAppExpandableAdapter(hMap,this);
+        PackageInfoHelper.setUp(getApplicationContext());
+        mAdapter = new PermissionAppExpandableAdapter(PackageInfoHelper.mPermissionAppMap, PackageInfoHelper.mRevokedPermissionsMap, PackageInfoHelper.mPermissionInfoStringMap, true, this);
         setListAdapter(mAdapter);
         getExpandableListView().setOnChildClickListener(mChildClickListener);
         registerForContextMenu(this.getExpandableListView());
-        CyanogenModCheck.isRunningOnCyanogenmod();
+        CyanogenModHelper.isRunningOnCyanogenmod();
     }
     
     private OnChildClickListener mChildClickListener = new OnChildClickListener() {
@@ -41,7 +39,7 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
 
             Intent intent = new Intent();
             PackageInfo pi = mAdapter.getPackageInfo(groupPosition,childPosition);
-            intent.putExtra("PackageInfo", pi);
+            intent.putExtra("PackageName", pi.packageName);
             intent.setClass(PermissionAppMapActivity.this, ApplicationInfoActivity.class);
             startActivity(intent);
       
@@ -56,8 +54,14 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
 	    
 	    if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 	        int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition); 
+	        int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition); 
 	        menu.setHeaderTitle((String)mAdapter.getGroup(groupPos));
-	        menu.add("Revoke");
+	        
+	        if(mAdapter.permissionRevoked(groupPos, childPos))
+	        	menu.add("Unrevoke");
+	        else
+	        	menu.add("Revoke");
+	        
 	        return;
 	    }
     }

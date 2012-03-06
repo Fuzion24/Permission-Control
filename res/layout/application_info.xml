@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="horizontal" >
-	<ImageView
+ 	android:orientation="vertical" 
+ 	android:layout_width="fill_parent"
+  	android:layout_height="fill_parent">
+ 	<ImageView
 	android:contentDescription="@string/desc"
 	android:id="@+id/android_info_image"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content">
 	</ImageView>
-    <TextView
-        android:id="@+id/android_info_text"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:gravity = "center_vertical"
-	/>
+	<TextView
+	  android:id="@+id/android_app_name"
+	  android:layout_height="wrap_content"
+	  android:gravity="center_vertical|center_horizontal"
+	  android:layout_width="wrap_content" />
+  <ListView 
+   android:id="@+id/application_uses_permission_list_view" 
+   android:layout_height="wrap_content"
+   android:layout_width="fill_parent"/>
 </LinearLayout>
