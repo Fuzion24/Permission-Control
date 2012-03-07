@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,31 +49,67 @@ public class CyanogenModHelper {
 		return false;
 	}
 	
+	public static void unRevokePermission(String packageName, String permission, Context ctx)
+	{
+		String [] rPerms = getRevokedPerms(packageName, ctx);
+		if(rPerms == null)
+			rPerms = new String[0];
+		ArrayList<String> revokedPerms = new ArrayList<String>();
+		revokedPerms.addAll(Arrays.asList(rPerms));
+		if(revokedPerms.contains(permission))
+		{
+			revokedPerms.remove(permission);
+			String [] permsToRevoke = new String[revokedPerms.size()];
+			revokedPerms.toArray(permsToRevoke);
+			setRevokedPermissions(packageName, permsToRevoke,ctx);
+		}
+	}
+	
+	public static void revokePermission(String packageName, String permission, Context ctx)
+	{
+		String [] rPerms = getRevokedPerms(packageName, ctx);
+		if(rPerms == null)
+			rPerms = new String[0];
+		ArrayList<String> revokedPerms = new ArrayList<String>();
+		revokedPerms.addAll(Arrays.asList(rPerms));
+		
+		if(!revokedPerms.contains(permission))
+		{
+			revokedPerms.add(permission);
+			String [] permsToRevoke = new String[revokedPerms.size()];
+			revokedPerms.toArray(permsToRevoke);
+			setRevokedPermissions(packageName, permsToRevoke,ctx);
+		}
+	}
     public static String [] getRevokedPerms(String packageName,Context ctx)
     {
     	String [] revokedPerms = null;
     	PackageManager pkgManager = ctx.getPackageManager();
 		Method getRevokedPermissions;
 		try {
-			getRevokedPermissions = pkgManager.getClass().getMethod("getRevokedPermissions",java.lang.String.class);
+			getRevokedPermissions = pkgManager.getClass().getMethod("getRevokedPermissions", java.lang.String.class);
 			Object[] params = new Object[] { packageName };
 			revokedPerms = (String[]) getRevokedPermissions.invoke(pkgManager, params);
-			if(revokedPerms.length > 0)
-				System.out.println("Package: " + packageName + " has revoked permissions:");
-			for(String revokedPerm : revokedPerms)
-			{
-				System.out.println(revokedPerm);
-			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 		return revokedPerms;
     }
-    
-    public static void setPermissions(String packageName, String [] permissions)
+   
+    public static void setRevokedPermissions(String packageName, String [] permissions, Context ctx)
     {
-
+    	PackageManager pkgManager = ctx.getPackageManager();
+		Method setRevokedPermissions;
+		
+		try {
+			setRevokedPermissions = pkgManager.getClass().getMethod("setRevokedPermissions", java.lang.String.class, String[].class);
+			Object[] params = new Object[] { packageName, permissions };
+			setRevokedPermissions.invoke(pkgManager, params);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
 	public static String getSystemProperty(String propName){

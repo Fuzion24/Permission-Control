@@ -31,7 +31,7 @@ public class PackageInfoHelper {
 		return null;
 	}
 	
-	public static void test()
+	public static void printGroupIds()
 	{
 		for(PackageInfo pkg : mPackages)
 		{
@@ -125,6 +125,20 @@ public class PackageInfoHelper {
     	}
     }
     
+    public static void refreshRevokedPermissions()
+    {
+    	getRevokedPermMap();
+    }
+    public static void revokePermission(String pkgName, String permissionName)
+    {
+    	CyanogenModHelper.revokePermission(pkgName, permissionName, mCTX);
+    }
+    
+    public static void unRevokePermission(String pkgName, String permissionName)
+    {
+    	CyanogenModHelper.unRevokePermission(pkgName, permissionName, mCTX);
+    }
+    
     public static void setUp(Context ctx)
     {
     	 mCTX = ctx;
@@ -137,8 +151,6 @@ public class PackageInfoHelper {
 
     private static void getRevokedPermMap()
     {
-    	if(mRevokedPermissionsMap != null)
-    		return;
     	//if(!(CyanogenModHelper.isRunningOnCyanogenmod() && CyanogenModHelper.hasRevokablePermissions()))
     	//	return;
     	mRevokedPermissionsMap = new HashMap<String, ArrayList<String>>();

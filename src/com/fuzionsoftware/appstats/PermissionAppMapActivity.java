@@ -1,5 +1,6 @@
 package com.fuzionsoftware.appstats;
 
+
 import android.app.ExpandableListActivity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 
 import com.fuzionsoftware.utils.CyanogenModHelper;
 import com.fuzionsoftware.utils.PackageInfoHelper;
-
 public class PermissionAppMapActivity extends ExpandableListActivity {
 
 	PermissionAppExpandableAdapter mAdapter;
@@ -26,13 +26,14 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         PackageInfoHelper.setUp(getApplicationContext());
-        mAdapter = new PermissionAppExpandableAdapter(PackageInfoHelper.mPermissionAppMap, PackageInfoHelper.mRevokedPermissionsMap, PackageInfoHelper.mPermissionInfoStringMap, true, this);
+        mAdapter = new PermissionAppExpandableAdapter(true, this);
         setListAdapter(mAdapter);
         getExpandableListView().setOnChildClickListener(mChildClickListener);
         registerForContextMenu(this.getExpandableListView());
         CyanogenModHelper.isRunningOnCyanogenmod();
+        
     }
-    
+
     private OnChildClickListener mChildClickListener = new OnChildClickListener() {
         public boolean onChildClick(ExpandableListView parent, View v,
                 int groupPosition, int childPosition, long id) {
@@ -51,7 +52,6 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 	    ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
 	    int type = ExpandableListView.getPackedPositionType(info.packedPosition);
-	    
 	    if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
 	        int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition); 
 	        int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition); 
@@ -61,25 +61,33 @@ public class PermissionAppMapActivity extends ExpandableListActivity {
 	        	menu.add("Unrevoke");
 	        else
 	        	menu.add("Revoke");
-	        
 	        return;
 	    }
     }
 
     public boolean onContextItemSelected(MenuItem item) {
         ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) item.getMenuInfo();
-        String title = null;
         int type = ExpandableListView.getPackedPositionType(info.packedPosition);
         if (type == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
             int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition); 
             int childPos = ExpandableListView.getPackedPositionChild(info.packedPosition); 
-            Toast.makeText(this, mAdapter.getGroup(groupPos) + " revoked for: " + 
-            		mAdapter.getChild(groupPos, childPos),
-                    Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (type == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
-            int groupPos = ExpandableListView.getPackedPositionGroup(info.packedPosition); 
-            Toast.makeText(this, title + ": Group " + groupPos + " clicked", Toast.LENGTH_SHORT).show();
+            String pkgName = (String) mAdapter.getPackageName(groupPos, childPos);
+            String permName = (String) mAdapter.getPermission(groupPos);
+	        if(mAdapter.permissionRevoked(groupPos, childPos))
+	        {
+	        	PackageInfoHelper.unRevokePermission(pkgName, permName);
+	        	mAdapter.refreshRevokedPerms();
+	        	mAdapter.notifyDataSetChanged();
+	            Toast.makeText(this,permName  + " unrevoked for: " + pkgName, Toast.LENGTH_LONG).show();
+	        }
+	        else
+	        {
+	        	PackageInfoHelper.revokePermission(pkgName, permName);
+	        	mAdapter.refreshRevokedPerms();
+	        	mAdapter.notifyDataSetChanged();
+	            Toast.makeText(this,permName  + " revoked for: " + pkgName, Toast.LENGTH_LONG).show();
+	        }
+
             return true;
         }
 

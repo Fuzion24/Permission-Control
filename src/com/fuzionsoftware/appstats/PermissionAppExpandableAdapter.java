@@ -19,6 +19,8 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.fuzionsoftware.utils.PackageInfoHelper;
+
 public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
     
 	HashMap<String, ArrayList<PackageInfo>> permissionAppMap;	
@@ -27,15 +29,12 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 	Object[] mKeys;
 	Activity mCTX;
 	
-	PermissionAppExpandableAdapter( HashMap<String,ArrayList<PackageInfo>> appPermissionMap, 
-									HashMap<String,ArrayList<String>> revokedPermMap,
-									HashMap<String,PermissionInfo> permStringInfo, 
-									boolean showOnlyDangerous,
+	PermissionAppExpandableAdapter( boolean showOnlyDangerous,
 									Activity context)
 	{
-		revokedPermissionMap = revokedPermMap;
-		permissionAppMap = appPermissionMap;
-		permissionStringInfoMap = permStringInfo;
+		revokedPermissionMap = PackageInfoHelper.mRevokedPermissionsMap;
+		permissionAppMap = PackageInfoHelper.mPermissionAppMap;
+		permissionStringInfoMap = PackageInfoHelper.mPermissionInfoStringMap;
 		
 		if(showOnlyDangerous)
 		{
@@ -48,7 +47,11 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
 
 		mCTX = context;
 	}
-	
+	public void refreshRevokedPerms()
+	{
+		PackageInfoHelper.refreshRevokedPermissions();
+		revokedPermissionMap = PackageInfoHelper.mRevokedPermissionsMap;		
+	}
 	private Object[] dangerousPerms()
 	{	
 		List<String> dangerousPerms = new ArrayList<String>();
@@ -153,6 +156,12 @@ public class PermissionAppExpandableAdapter extends BaseExpandableListAdapter {
     public boolean hasStableIds() {
         return true;
     }
+	public String getPackageName(int groupPos, int childPos) {
+		return permissionAppMap.get(mKeys[groupPos]).get(childPos).packageName;
+	}
+	public String getPermission(int groupPos) {
+		return (String) mKeys[groupPos];
+	}
 
 }
 
