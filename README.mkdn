@@ -1,0 +1,16 @@
+Permission Control
+===========
+
+Purpose
+------------------
+
+The purpose of this application is to view Android permissions in a more meaningful way and allow fine grained control of applications on a permission by permission basis. Permission Control groups application by their permissions. When viewing applications that contain a particular permission it is possible to revoke that permission for the application. In order to take advantage of the permission revokation system you will need CyanogenMod7 and this app will need to be signed and installed as a signature app.
+
+I.E. Facebook can read all of your text messages.  If you do not want Facebook to have that particular capability you could remove it by navigating to the READ_SMS permission and revoking it for the Facebook application.
+
+
+Future Plans
+---------------
+
+Be able to revoke permissions on devices that do not have framework support.
+Create a view for a user's favorite permissions
